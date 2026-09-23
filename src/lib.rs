@@ -1,6 +1,6 @@
-//! Domain shared value objects: Order, Position, Trade, Portfolio, and shared enums.
+//! 交易领域共享值对象：订单、持仓、成交、组合及共享枚举。
 //!
-//! This crate provides the L0 shared type layer used across all domain crates.
+//! 本 crate 为所有领域 crate 提供 L0 共享类型层。
 
 #![cfg_attr(
     test,
@@ -10,27 +10,27 @@
 #![deny(missing_docs)]
 #![deny(unreachable_pub)]
 
-/// Re-export `decimalx::Decimal`（ADR-007 唯一底座；kp4 自 rust_decimal 收敛）。
+/// 公开重导出 `decimalx::Decimal`（ADR-007 唯一底座；kp4 自 `rust_decimal` 收敛）。
 pub use decimalx::{Decimal, DecimalError};
 
 // ---------------------------------------------------------------------------
 // InstrumentKey（core 平面唯一 canonical owner；ADR-001 / DX-CAN-001）
 // ---------------------------------------------------------------------------
 
-/// 跨层共享的结构化 instrument 标识（`exchange` + `symbol`）。
+/// 跨层共享的结构化标的标识（`exchange` + `symbol`）。
 ///
-/// 本类型是交易对象共享的 instrument 身份表示，避免在领域类型中重复定义该结构。
+/// 本类型是交易对象共享的标的身份表示，避免在领域类型中重复定义该结构。
 /// 它不依赖外部归一化或 I/O crate；wire 层的原生场所符号仍可使用字符串表示。
 ///
 /// 形状边界：只承载 `(exchange, symbol)` 二元组，**不**做跨场所符号归一化、不做
-/// 产品线推断、不做校验。exchange 应为稳定小写 provider key（如 `binance`），
-/// symbol 为 provider 规范化后的原生标的。adapter 负责保存双向映射。
+/// 产品线推断、不做校验。`exchange` 应为稳定小写 provider key（如 `binance`），
+/// `symbol` 为 provider 规范化后的原生标的。适配器负责保存双向映射。
 ///
-/// serde wire：`{"exchange": "..", "symbol": ".."}`（camelCase 单词无差异）。
+/// serde wire：`{"exchange": "..", "symbol": ".."}`（camelCase 单词不改变字段名）。
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstrumentKey {
-    /// Exchange / provider key（小写，如 `binance`、`okx`、`coinglass`）。
+    /// 交易场所或 provider 标识（小写，如 `binance`、`okx`、`coinglass`）。
     pub exchange: String,
     /// Provider 原生交易对符号（如 `BTCUSDT`、`BTC-USDT`）。
     pub symbol: String,
@@ -49,24 +49,24 @@ use serde::{Deserialize, Serialize};
 // Type aliases
 // ---------------------------------------------------------------------------
 
-/// Unique order identifier (exchange-assigned).
+/// 唯一订单标识，由交易场所分配。
 pub type OrderId = String;
-/// Unique trade identifier (exchange-assigned).
+/// 唯一成交标识，由交易场所分配。
 pub type TradeId = String;
-/// Unique execution report identifier.
+/// 唯一执行回报标识。
 pub type ReportId = String;
-/// Unique position identifier.
+/// 唯一持仓标识。
 pub type PositionId = String;
-/// Unique portfolio identifier.
+/// 唯一组合标识。
 pub type PortfolioId = String;
-/// Unix timestamp in milliseconds since 1970-01-01 UTC.
+/// 自 1970-01-01 UTC 起计算的 Unix 毫秒时间戳。
 pub type Timestamp = i64;
 
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
 
-/// Side of an order or trade.
+/// 订单或成交方向。
 ///
 /// # Examples
 ///
@@ -84,7 +84,7 @@ pub enum OrderSide {
     Sell,
 }
 
-/// Type of an order.
+/// 订单类型。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,7 +99,7 @@ pub enum OrderType {
     StopLimit,
 }
 
-/// Status of an order.
+/// 订单状态。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -124,22 +124,22 @@ pub enum OrderStatus {
     PendingReplace,
 }
 
-/// Time-in-force policy for an order.
+/// 订单有效期策略。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(tag = "type", content = "value")]
 pub enum TimeInForce {
-    /// Good Till Cancelled.
+    /// 持续有效，直到取消。
     Gtc,
-    /// Immediate Or Cancel.
+    /// 立即成交，否则取消剩余部分。
     Ioc,
-    /// Fill Or Kill.
+    /// 全部立即成交，否则全部取消。
     Fok,
-    /// Good Till Date：截止时间戳为 UTC Unix 毫秒，不得早于订单创建时间。
+    /// 指定截止日期：截止时间为 UTC Unix 毫秒，且不得早于订单创建时间。
     Gtd(Timestamp),
 }
 
-/// Direction of a position.
+/// 持仓方向。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -152,7 +152,7 @@ pub enum PositionDirection {
     Flat,
 }
 
-/// Status of a position.
+/// 持仓状态。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -165,7 +165,7 @@ pub enum PositionStatus {
     Liquidated,
 }
 
-/// Execution type for an execution report.
+/// 执行回报中的执行类型。
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -192,13 +192,13 @@ pub enum ExecType {
 // Commission
 // --------------------------------------------------------------------------
 
-/// Commission details for a trade.
+/// 成交手续费明细。
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Commission {
-    /// Commission amount.
+    /// 手续费金额。
     pub amount: Decimal,
-    /// Asset in which the commission is denominated.
+    /// 手续费计价资产。
     pub asset: String,
 }
 
@@ -206,39 +206,39 @@ pub struct Commission {
 // Order
 // ---------------------------------------------------------------------------
 
-/// A trading order.
+/// 交易订单。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
-    /// Exchange-assigned order identifier.
+    /// 交易场所分配的订单标识。
     pub order_id: OrderId,
-    /// Instrument 标识（canonical `InstrumentKey`；ADR-001 / DX-CAN-001）。
+    /// 标的标识（规范类型为 `InstrumentKey`；ADR-001 / DX-CAN-001）。
     pub instrument: InstrumentKey,
-    /// Order side (buy / sell).
+    /// 订单方向（买入或卖出）。
     pub side: OrderSide,
-    /// Order type (market, limit, stop, etc.).
+    /// 订单类型（市价、限价、止损等）。
     pub order_type: OrderType,
-    /// Current order status.
+    /// 当前订单状态。
     pub status: OrderStatus,
-    /// Limit price (optional, `None` for market orders).
+    /// 限价；市价单为 `None`。
     pub price: Option<Decimal>,
-    /// Stop / trigger price for StopMarket / StopLimit orders.
+    /// StopMarket / StopLimit 订单的止损或触发价格。
     pub stop_price: Option<Decimal>,
-    /// Ordered quantity.
+    /// 下单数量。
     pub quantity: Decimal,
-    /// Quantity that has been filled.
+    /// 已成交数量。
     pub filled_quantity: Decimal,
-    /// Quantity remaining to fill.
+    /// 剩余待成交数量。
     pub remaining_quantity: Decimal,
-    /// Average fill price (available after partial / full fill).
+    /// 平均成交价格，部分或全部成交后可用。
     pub avg_fill_price: Option<Decimal>,
-    /// Time-in-force policy.
+    /// 订单有效期策略。
     pub time_in_force: TimeInForce,
-    /// Order creation timestamp (Unix ms).
+    /// 订单创建时间，Unix 毫秒。
     pub created_at: Timestamp,
-    /// Last update timestamp (Unix ms).
+    /// 最近更新时间，Unix 毫秒。
     pub updated_at: Timestamp,
-    /// Client-supplied order identifier (optional).
+    /// 客户端提供的订单标识，可选。
     pub client_order_id: Option<String>,
 }
 
@@ -246,32 +246,32 @@ pub struct Order {
 // Position
 // ---------------------------------------------------------------------------
 
-/// A trading position.
+/// 交易持仓。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    /// Position identifier.
+    /// 持仓标识。
     pub position_id: PositionId,
-    /// Instrument 标识（canonical `InstrumentKey`；ADR-001 / DX-CAN-001）。
+    /// 标的标识（规范类型为 `InstrumentKey`；ADR-001 / DX-CAN-001）。
     pub instrument: InstrumentKey,
-    /// Position direction (long / short / flat).
+    /// 持仓方向（多头、空头或空仓）。
     pub direction: PositionDirection,
     /// 持仓状态（可选；历史 fixture 可缺省，DX-COMP-001）。
     #[serde(default)]
     pub status: Option<PositionStatus>,
-    /// Position quantity.
+    /// 持仓数量。
     pub quantity: Decimal,
-    /// Average entry price.
+    /// 平均开仓价格。
     pub entry_price: Decimal,
-    /// Current market price.
+    /// 当前市场价格。
     pub current_price: Decimal,
-    /// Unrealised P&L.
+    /// 未实现盈亏。
     pub unrealized_pnl: Decimal,
-    /// Realised P&L.
+    /// 已实现盈亏。
     pub realized_pnl: Decimal,
-    /// Position creation timestamp (Unix ms).
+    /// 持仓创建时间，Unix 毫秒。
     pub created_at: Timestamp,
-    /// Last update timestamp (Unix ms).
+    /// 最近更新时间，Unix 毫秒。
     pub updated_at: Timestamp,
 }
 
@@ -279,27 +279,27 @@ pub struct Position {
 // Trade
 // ---------------------------------------------------------------------------
 
-/// A matched trade (fill).
+/// 已撮合的成交。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
-    /// Trade identifier.
+    /// 成交标识。
     pub trade_id: TradeId,
-    /// Parent order identifier.
+    /// 父订单标识。
     pub order_id: OrderId,
-    /// Instrument 标识（canonical `InstrumentKey`；ADR-001 / DX-CAN-001）。
+    /// 标的标识（规范类型为 `InstrumentKey`；ADR-001 / DX-CAN-001）。
     pub instrument: InstrumentKey,
-    /// Trade side.
+    /// 成交方向。
     pub side: OrderSide,
-    /// Execution price.
+    /// 成交价格。
     pub price: Decimal,
-    /// Filled quantity.
+    /// 成交数量。
     pub quantity: Decimal,
-    /// Commission charged (optional).
+    /// 手续费，可选。
     pub commission: Option<Commission>,
-    /// Execution timestamp (Unix ms).
+    /// 成交时间，Unix 毫秒。
     pub executed_at: Timestamp,
-    /// Whether the trade was a maker (`true`), taker (`false`), or unknown (`None`).
+    /// 是否为 maker 成交（`true`）、taker 成交（`false`），或未知（`None`）。
     pub is_maker: Option<bool>,
 }
 
@@ -307,43 +307,43 @@ pub struct Trade {
 // ExecutionReport
 // ---------------------------------------------------------------------------
 
-/// An execution report sent by the exchange in response to order lifecycle events.
+/// 交易场所针对订单生命周期事件发送的执行回报。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecutionReport {
-    /// Report identifier.
+    /// 回报标识。
     pub report_id: ReportId,
-    /// Related order identifier.
+    /// 关联订单标识。
     pub order_id: OrderId,
-    /// Execution type describing the event.
+    /// 描述该事件的执行类型。
     pub exec_type: ExecType,
-    /// New order status after this event.
+    /// 事件发生后的订单状态。
     pub order_status: OrderStatus,
-    /// Instrument 标识（canonical `InstrumentKey`；ADR-001 / DX-CAN-001）。
+    /// 标的标识（规范类型为 `InstrumentKey`；ADR-001 / DX-CAN-001）。
     pub instrument: InstrumentKey,
-    /// Order side.
+    /// 订单方向。
     pub side: OrderSide,
-    /// Order type.
+    /// 订单类型。
     pub order_type: OrderType,
-    /// Limit price (optional).
+    /// 限价，可选。
     pub price: Option<Decimal>,
-    /// Order quantity.
+    /// 订单数量。
     pub quantity: Decimal,
-    /// Price of the last fill (optional).
+    /// 最近一笔成交价格，可选。
     pub last_filled_price: Option<Decimal>,
-    /// Quantity of the last fill (optional).
+    /// 最近一笔成交数量，可选。
     pub last_filled_quantity: Option<Decimal>,
-    /// Cumulative filled quantity.
+    /// 累计成交数量。
     pub cumulative_filled_quantity: Decimal,
-    /// Remaining quantity.
+    /// 剩余数量。
     pub remaining_quantity: Decimal,
-    /// Commission charged (optional).
+    /// 手续费，可选。
     pub commission: Option<Commission>,
-    /// Trade identifier of the last fill (optional).
+    /// 最近一笔成交的标识，可选。
     pub trade_id: Option<TradeId>,
-    /// Reason for rejection (optional).
+    /// 拒绝原因，可选。
     pub reject_reason: Option<String>,
-    /// Timestamp of this event (Unix ms).
+    /// 事件时间，Unix 毫秒。
     pub occurred_at: Timestamp,
 }
 
@@ -351,30 +351,30 @@ pub struct ExecutionReport {
 // Portfolio
 // ---------------------------------------------------------------------------
 
-/// A portfolio (collection of positions with aggregate P&L).
+/// 投资组合，包含持仓及汇总盈亏。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Portfolio {
-    /// Portfolio identifier.
+    /// 组合标识。
     pub portfolio_id: PortfolioId,
-    /// Account identifier that owns this portfolio.
+    /// 所属账户标识。
     pub account_id: String,
-    /// Positions held in the portfolio.
+    /// 组合中的持仓。
     pub positions: Vec<Position>,
-    /// Total unrealised P&L across all positions.
+    /// 所有持仓的未实现盈亏合计。
     pub total_unrealized_pnl: Decimal,
-    /// Total realised P&L across all positions.
+    /// 所有持仓的已实现盈亏合计。
     pub total_realized_pnl: Decimal,
-    /// Total commission accrued.
+    /// 累计手续费总额。
     ///
     /// 单资产汇总或调用方约定的主资产合计；多资产明细见 `commissions`（DX-COMP-001）。
     pub total_commission: Decimal,
     /// 按资产拆分的手续费明细（可空；与 `total_commission` 并存）。
     #[serde(default)]
     pub commissions: Vec<Commission>,
-    /// Total number of trades executed.
+    /// 已执行的成交笔数。
     pub total_trades: u64,
-    /// Last update timestamp (Unix ms).
+    /// 最近更新时间，Unix 毫秒。
     pub updated_at: Timestamp,
 }
 
