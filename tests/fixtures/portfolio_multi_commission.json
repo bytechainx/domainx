@@ -1,0 +1,29 @@
+{
+  "portfolioId": "pf-1",
+  "accountId": "acc-1",
+  "positions": [
+    {
+      "positionId": "pos-1",
+      "instrument": { "exchange": "binance", "symbol": "BTCUSDT" },
+      "direction": "long",
+      "status": "open",
+      "quantity": { "mantissa": 10, "scale": 1 },
+      "entryPrice": { "mantissa": 50000, "scale": 0 },
+      "currentPrice": { "mantissa": 51000, "scale": 0 },
+      "unrealizedPnl": { "mantissa": 1000, "scale": 0 },
+      "realizedPnl": { "mantissa": 0, "scale": 0 },
+      "createdAt": 1700000000000,
+      "updatedAt": 1700000001000
+    }
+  ],
+  "totalUnrealizedPnl": { "mantissa": 1000, "scale": 0 },
+  "totalRealizedPnl": { "mantissa": 0, "scale": 0 },
+  "totalCommission": { "mantissa": 15, "scale": 4 },
+  "commissions": [
+    { "amount": { "mantissa": 10, "scale": 4 }, "asset": "BNB" },
+    { "amount": { "mantissa": 5, "scale": 4 }, "asset": "BNB" },
+    { "amount": { "mantissa": 125, "scale": 2 }, "asset": "USDT" }
+  ],
+  "totalTrades": 3,
+  "updatedAt": 1700000001000
+}

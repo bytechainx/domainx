@@ -1,0 +1,14 @@
+{
+  "tradeId": "t-edge",
+  "orderId": "o-edge",
+  "instrument": { "exchange": "binance", "symbol": "ETHUSDT" },
+  "side": "sell",
+  "price": { "mantissa": -1, "scale": 6 },
+  "quantity": { "mantissa": "12345678901234567890123456789", "scale": 9 },
+  "commission": {
+    "amount": { "mantissa": 1000, "scale": 4 },
+    "asset": "ETH"
+  },
+  "executedAt": 1700000000500,
+  "isMaker": false
+}

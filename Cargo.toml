@@ -1,0 +1,54 @@
+[package]
+name = "domainx"
+version = "0.1.5"
+edition = "2024"
+rust-version = "1.88"
+description = "共享交易领域值对象与纯函数校验"
+license = "MIT"
+repository = "https://github.com/bytechainx/domainx"
+homepage = "https://github.com/bytechainx/domainx"
+documentation = "https://github.com/bytechainx/domainx#readme"
+readme = "README.md"
+publish = false
+include = ["src/**/*", "tests/**/*", "benches/**/*", "examples/**/*", "docs/**/*", "README.md", "CHANGELOG.md", "CONTEXT.md", "CONTRIBUTING.md", "LICENSE", "Cargo.toml"]
+
+[lib]
+name = "domainx"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+# ADR-007：Decimal 族唯一底座为 decimalx（kp4：rust_decimal → decimalx）
+decimalx = { version = "0.1.8", path = "../decimalx" }
+thiserror = "2"
+
+[dev-dependencies]
+proptest = "1"
+serde_json = "1"
+static_assertions = "1"
+
+[lints.rust]
+private_interfaces = "deny"
+private_bounds = "deny"
+unused_must_use = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"
+
+[[example]]
+name = "domainx_basic"
+path = "examples/domainx_basic.rs"
+
+[[bench]]
+name = "hot_path"
+harness = false
+
+[package.metadata.bytechainx]
+module_id = "domainx"
+owner = "bytechainx"
+role = "kernel"
+semantic_contract = "docs/标准.md"
