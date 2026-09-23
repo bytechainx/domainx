@@ -22,12 +22,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: bytechainx/decimalx
+          ref: feature/initial-migration
           path: decimalx
 
       - name: 检出 kernel
         uses: actions/checkout@v4
         with:
           repository: bytechainx/kernel
+          ref: feature/initial-migration
           path: kernel
 
       - name: 安装 Rust 工具链（含 rustfmt 与 clippy）
