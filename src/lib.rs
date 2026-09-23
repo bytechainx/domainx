@@ -6,6 +6,8 @@
     test,
     allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unreachable)
 )]
+#![forbid(unsafe_code)]
+#![deny(missing_docs)]
 #![deny(unreachable_pub)]
 
 /// Re-export `decimalx::Decimal`（ADR-007 唯一底座；kp4 自 rust_decimal 收敛）。
@@ -65,11 +67,20 @@ pub type Timestamp = i64;
 // ---------------------------------------------------------------------------
 
 /// Side of an order or trade.
+///
+/// # Examples
+///
+/// ```
+/// let side = domainx::OrderSide::Buy;
+/// assert_eq!(side, domainx::OrderSide::Buy);
+/// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderSide {
+    /// 买入方向。
     Buy,
+    /// 卖出方向。
     Sell,
 }
 
@@ -78,9 +89,13 @@ pub enum OrderSide {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderType {
+    /// 按市场可用价格立即成交。
     Market,
+    /// 价格达到指定限价时成交。
     Limit,
+    /// 触发后按市场价格成交。
     StopMarket,
+    /// 触发后按指定限价成交。
     StopLimit,
 }
 
@@ -89,14 +104,23 @@ pub enum OrderType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderStatus {
+    /// 已创建，尚未成交。
     New,
+    /// 已部分成交，仍有剩余数量。
     PartiallyFilled,
+    /// 全部数量已成交。
     Filled,
+    /// 已取消。
     Canceled,
+    /// 已拒绝。
     Rejected,
+    /// 已过期。
     Expired,
+    /// 创建请求处理中。
     PendingNew,
+    /// 取消请求处理中。
     PendingCancel,
+    /// 修改请求处理中。
     PendingReplace,
 }
 
@@ -120,8 +144,11 @@ pub enum TimeInForce {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum PositionDirection {
+    /// 多头方向。
     Long,
+    /// 空头方向。
     Short,
+    /// 当前无方向或无持仓。
     Flat,
 }
 
@@ -130,8 +157,11 @@ pub enum PositionDirection {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum PositionStatus {
+    /// 持仓处于开放状态。
     Open,
+    /// 持仓已关闭。
     Closed,
+    /// 持仓已被强制平仓。
     Liquidated,
 }
 
@@ -140,13 +170,21 @@ pub enum PositionStatus {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ExecType {
+    /// 新订单已确认。
     New,
+    /// 订单已取消。
     Canceled,
+    /// 订单已修改。
     Replaced,
+    /// 订单已拒绝。
     Rejected,
+    /// 发生了成交。
     Trade,
+    /// 订单已过期。
     Expired,
+    /// 已撤销先前报告的成交。
     TradeCancel,
+    /// 状态报告，不改变订单状态。
     Status,
 }
 
