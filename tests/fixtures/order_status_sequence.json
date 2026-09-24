@@ -1,0 +1,11 @@
+{
+  "legal": [
+    ["new", "partiallyFilled"],
+    ["partiallyFilled", "filled"]
+  ],
+  "illegal": [
+    ["filled", "new"],
+    ["canceled", "partiallyFilled"],
+    ["rejected", "filled"]
+  ]
+}

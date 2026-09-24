@@ -1,0 +1,22 @@
+{
+  "reportId": "r-1",
+  "orderId": "o-1",
+  "execType": "trade",
+  "orderStatus": "partiallyFilled",
+  "instrument": { "exchange": "binance", "symbol": "BTCUSDT" },
+  "side": "buy",
+  "orderType": "limit",
+  "price": { "mantissa": 5000010, "scale": 2 },
+  "quantity": { "mantissa": 200, "scale": 2 },
+  "lastFilledPrice": { "mantissa": 5000010, "scale": 2 },
+  "lastFilledQuantity": { "mantissa": 50, "scale": 2 },
+  "cumulativeFilledQuantity": { "mantissa": 50, "scale": 2 },
+  "remainingQuantity": { "mantissa": 150, "scale": 2 },
+  "commission": {
+    "amount": { "mantissa": 1, "scale": 4 },
+    "asset": "BNB"
+  },
+  "tradeId": "t-1",
+  "rejectReason": null,
+  "occurredAt": 1700000000600
+}

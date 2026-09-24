@@ -1,0 +1,17 @@
+{
+  "orderId": "ord-001",
+  "instrument": { "exchange": "binance", "symbol": "BTCUSDT" },
+  "side": "buy",
+  "orderType": "limit",
+  "status": "new",
+  "price": { "mantissa": 5000000, "scale": 2 },
+  "stopPrice": null,
+  "quantity": { "mantissa": 15000, "scale": 4 },
+  "filledQuantity": { "mantissa": 0, "scale": 4 },
+  "remainingQuantity": { "mantissa": 15000, "scale": 4 },
+  "avgFillPrice": null,
+  "timeInForce": { "type": "Gtc" },
+  "createdAt": 1700000000000,
+  "updatedAt": 1700000000000,
+  "clientOrderId": "cli-1"
+}
