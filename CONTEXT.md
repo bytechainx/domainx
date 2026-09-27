@@ -1,6 +1,6 @@
 # 项目上下文
 
-`domainx` 是纯交易领域值对象 crate，当前版本 `0.1.5`。
+`domainx` 是纯交易领域值对象 crate，当前版本 `0.1.6`。
 
 - 语义权威：[`docs/标准.md`](docs/标准.md)。
 - `decimalx` 是唯一内部 crate 依赖，必须保持 `version + path` 与版本一致。
