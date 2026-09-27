@@ -1,6 +1,6 @@
 [package]
 name = "domainx"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 rust-version = "1.88"
 description = "共享交易领域值对象与纯函数校验"
@@ -18,7 +18,7 @@ name = "domainx"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 # ADR-007：Decimal 族唯一底座为 decimalx（kp4：rust_decimal → decimalx）
-decimalx = { version = "0.1.8", path = "../decimalx" }
+decimalx = { version = "0.1.9", path = "../decimalx" }
 thiserror = "2"
 
 [dev-dependencies]
@@ -50,5 +50,5 @@ harness = false
 [package.metadata.bytechainx]
 module_id = "domainx"
 owner = "bytechainx"
-role = "core"
+role = "kernel"
 semantic_contract = "docs/标准.md"
