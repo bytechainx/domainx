@@ -11,19 +11,13 @@
 
 ## 获取源码
 
-`domainx` 依赖同级 `decimalx` 仓库，后者又依赖同级 `kernel` 仓库：
+`decimalx` 以 Git 依赖消费（`rev` 与 workspace `crates.lock.json` 登记 SHA 对齐），只克隆本仓即可构建。
 
-```bash
-git clone git@github.com:bytechainx/kernel.git
-git clone git@github.com:bytechainx/decimalx.git
-git clone git@github.com:bytechainx/domainx.git
-```
-
-在 Cargo 项目中使用本地 checkout：
+消费方使用 Git 依赖：
 
 ```toml
 [dependencies]
-domainx = { version = "0.1.6", path = "../domainx" }
+domainx = { version = "0.1.6", git = "https://github.com/bytechainx/domainx.git", rev = "<DOMAINX_SHA>" }
 ```
 
 ## 职责与边界
