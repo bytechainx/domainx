@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### 变更
+
+- `decimalx` 由 `path = "../decimalx"` 改为 Git 依赖（Goal 029 T010 / DDR-028）；只克隆本仓即可构建。
+
 ## [0.1.6] - 2026-09-27
 
 - 将本体角色登记为 `kernel`，与 Feature 008 冻结名册一致；公开 API 不变。
