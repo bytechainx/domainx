@@ -19,7 +19,7 @@ name = "domainx"
 serde = { version = "1", features = ["derive"] }
 # ADR-007：Decimal 族唯一底座为 decimalx（kp4：rust_decimal → decimalx）
 # rev 须与 workspace crates.lock.json 登记的 decimalx SHA 对齐（Goal 029 T010 / DDR-028）
-decimalx = { version = "0.1.9", git = "https://github.com/bytechainx/decimalx.git", rev = "bc11a07e67a96a57c5f9f646222a4d637923ce1c" }
+decimalx = { version = "0.1.9", git = "https://github.com/bytechainx/decimalx.git", rev = "dd5ef8a8f3a1f6236c76e5a8928bd5fcc877c57a" }
 thiserror = "2"
 
 [dev-dependencies]
