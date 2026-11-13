@@ -568,4 +568,51 @@ mod tests {
         };
         assert_eq!(portfolio.positions.len(), 1);
     }
+
+    /// 编译期守卫：枚举变体与 `tests/serde_fixtures.rs` 的 wire 名表必须同步。
+    ///
+    /// 本测试不校验 wire 名，只要求六个外部标记枚举与 `TimeInForce` 在本 crate 内保持
+    /// 穷尽匹配。新增变体时缺分支会让 `cargo test` 编译失败。crate 外的集成测试受
+    /// `#[non_exhaustive]` 限制，无法做穷尽匹配，故守卫落在此处。
+    #[test]
+    fn enum_variants_require_wire_table_update() {
+        match OrderSide::Buy {
+            OrderSide::Buy | OrderSide::Sell => {}
+        }
+        match OrderType::Market {
+            OrderType::Market | OrderType::Limit | OrderType::StopMarket | OrderType::StopLimit => {
+            }
+        }
+        match OrderStatus::New {
+            OrderStatus::New
+            | OrderStatus::PartiallyFilled
+            | OrderStatus::Filled
+            | OrderStatus::Canceled
+            | OrderStatus::Rejected
+            | OrderStatus::Expired
+            | OrderStatus::PendingNew
+            | OrderStatus::PendingCancel
+            | OrderStatus::PendingReplace => {}
+        }
+        match TimeInForce::Gtc {
+            TimeInForce::Gtc | TimeInForce::Ioc | TimeInForce::Fok => {}
+            TimeInForce::Gtd(_) => {}
+        }
+        match PositionDirection::Long {
+            PositionDirection::Long | PositionDirection::Short | PositionDirection::Flat => {}
+        }
+        match PositionStatus::Open {
+            PositionStatus::Open | PositionStatus::Closed | PositionStatus::Liquidated => {}
+        }
+        match ExecType::New {
+            ExecType::New
+            | ExecType::Canceled
+            | ExecType::Replaced
+            | ExecType::Rejected
+            | ExecType::Trade
+            | ExecType::Expired
+            | ExecType::TradeCancel
+            | ExecType::Status => {}
+        }
+    }
 }
