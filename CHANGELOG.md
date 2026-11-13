@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### 测试
+
+- 补齐 `DX-VAL-003` 的价格组合分支：Market / Limit 拒绝 `stop_price`、StopMarket 缺 `stop_price` 拒绝、StopLimit 缺 `price` 拒绝、Market 无价格正例（G-01，5 条）。
+- 补齐 6 个外部标记枚举共 29 个变体的 camelCase wire 名断言，并在 crate 内加穷尽匹配守卫（G-02）。
+- 补齐 `Portfolio.commissions` 的「缺失 → `[]`」「`null` → 反序列化失败」「显式 `[]`」三态用例（G-03）。
+- 公开 API 与运行行为不变。
+
 ## [0.1.6] - 2026-11-13
 
 ### 变更

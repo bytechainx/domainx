@@ -3,7 +3,7 @@
 //!
 //! Decimal wire 为 decimalx v1：`{mantissa, scale}`；**写入** `mantissa` 为十进制字符串（读兼容历史 JSON 整数）。
 
-use domainx::{Decimal, ExecutionReport, Order, TimeInForce, Trade, validate_order};
+use domainx::{Decimal, ExecutionReport, Order, Portfolio, TimeInForce, Trade, validate_order};
 use serde_json::Value;
 use std::str::FromStr;
 
@@ -168,4 +168,138 @@ fn dx_api_002_order_wire_rejects_snake_case_order_id() {
     }"#;
     let err = serde_json::from_str::<Order>(json).expect_err("snake_case order_id 必须失败");
     assert!(err.to_string().contains("orderId") || err.to_string().contains("missing field"));
+}
+
+/// DX-API-002：六个外部标记枚举的全部 29 个变体使用 camelCase wire 名。
+///
+/// 与 `src/lib.rs` 的 `enum_variants_require_wire_table_update` 配套：那里守变体集合，
+/// 这里守 wire 名。`TimeInForce` 是相邻标记，另由本文件前两条用例覆盖。
+#[test]
+fn dx_api_002_all_enum_variants_use_camel_case_wire_names() {
+    use domainx::{ExecType, OrderSide, OrderStatus, OrderType, PositionDirection, PositionStatus};
+
+    macro_rules! assert_wire {
+        ($ty:ty, [$(($variant:expr, $name:literal)),+ $(,)?]) => {{
+            let mut count = 0usize;
+            $(
+                let json = serde_json::to_value(&$variant).expect("serialize enum variant");
+                assert_eq!(
+                    json,
+                    serde_json::Value::String($name.to_string()),
+                    "wire name of {}::{}",
+                    stringify!($ty),
+                    stringify!($variant)
+                );
+                let back: $ty =
+                    serde_json::from_value(json).expect("deserialize enum variant");
+                assert_eq!(
+                    back,
+                    $variant,
+                    "round-trip of {}::{}",
+                    stringify!($ty),
+                    stringify!($variant)
+                );
+                count += 1;
+            )+
+            count
+        }};
+    }
+
+    let total = assert_wire!(OrderSide, [(OrderSide::Buy, "buy"), (OrderSide::Sell, "sell")])
+        + assert_wire!(
+            OrderType,
+            [
+                (OrderType::Market, "market"),
+                (OrderType::Limit, "limit"),
+                (OrderType::StopMarket, "stopMarket"),
+                (OrderType::StopLimit, "stopLimit"),
+            ]
+        )
+        + assert_wire!(
+            OrderStatus,
+            [
+                (OrderStatus::New, "new"),
+                (OrderStatus::PartiallyFilled, "partiallyFilled"),
+                (OrderStatus::Filled, "filled"),
+                (OrderStatus::Canceled, "canceled"),
+                (OrderStatus::Rejected, "rejected"),
+                (OrderStatus::Expired, "expired"),
+                (OrderStatus::PendingNew, "pendingNew"),
+                (OrderStatus::PendingCancel, "pendingCancel"),
+                (OrderStatus::PendingReplace, "pendingReplace"),
+            ]
+        )
+        + assert_wire!(
+            PositionDirection,
+            [
+                (PositionDirection::Long, "long"),
+                (PositionDirection::Short, "short"),
+                (PositionDirection::Flat, "flat"),
+            ]
+        )
+        + assert_wire!(
+            PositionStatus,
+            [
+                (PositionStatus::Open, "open"),
+                (PositionStatus::Closed, "closed"),
+                (PositionStatus::Liquidated, "liquidated"),
+            ]
+        )
+        + assert_wire!(
+            ExecType,
+            [
+                (ExecType::New, "new"),
+                (ExecType::Canceled, "canceled"),
+                (ExecType::Replaced, "replaced"),
+                (ExecType::Rejected, "rejected"),
+                (ExecType::Trade, "trade"),
+                (ExecType::Expired, "expired"),
+                (ExecType::TradeCancel, "tradeCancel"),
+                (ExecType::Status, "status"),
+            ]
+        );
+
+    assert_eq!(total, 29, "六个枚举共 29 个变体，须与 src/lib.rs 的穷尽匹配守卫同步");
+}
+
+const PORTFOLIO_WITHOUT_COMMISSIONS: &str = r#"{
+  "portfolioId":"pf-1",
+  "accountId":"acct-1",
+  "positions":[],
+  "totalUnrealizedPnl":{"mantissa":0,"scale":0},
+  "totalRealizedPnl":{"mantissa":0,"scale":0},
+  "totalCommission":{"mantissa":0,"scale":0},
+  "totalTrades":0,
+  "updatedAt":1700000000000
+}"#;
+
+fn portfolio_fixture() -> serde_json::Value {
+    serde_json::from_str(PORTFOLIO_WITHOUT_COMMISSIONS).expect("portfolio base json")
+}
+
+/// DX-API-002：`commissions` 缺失时按 `#[serde(default)]` 得空向量。
+#[test]
+fn dx_api_002_portfolio_commissions_absent_defaults_to_empty() {
+    let portfolio: Portfolio =
+        serde_json::from_value(portfolio_fixture()).expect("portfolio without commissions");
+    assert!(portfolio.commissions.is_empty());
+}
+
+/// DX-API-002：`commissions: null` 不是缺失，须反序列化失败。
+#[test]
+fn dx_api_002_portfolio_commissions_null_is_rejected() {
+    let mut value = portfolio_fixture();
+    value["commissions"] = serde_json::Value::Null;
+    let err = serde_json::from_value::<Portfolio>(value).expect_err("null commissions must fail");
+    assert_eq!(err.classify(), serde_json::error::Category::Data);
+}
+
+/// DX-API-002：显式空数组与缺失同结果。
+#[test]
+fn dx_api_002_portfolio_commissions_explicit_empty() {
+    let mut value = portfolio_fixture();
+    value["commissions"] = serde_json::json!([]);
+    let portfolio: Portfolio =
+        serde_json::from_value(value).expect("portfolio with empty commissions");
+    assert!(portfolio.commissions.is_empty());
 }

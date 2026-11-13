@@ -288,6 +288,48 @@ mod tests {
         assert!(matches!(err, ValidationError::Price(_)));
     }
 
+    /// DX-VAL-003
+    #[test]
+    fn dx_val_003_market_rejects_stop_price() {
+        let err = validate_order_prices(&OrderType::Market, None, Some(Decimal::new(99, 0)))
+            .expect_err("market with stop_price");
+        assert!(matches!(err, ValidationError::Price(_)));
+    }
+
+    /// DX-VAL-003
+    #[test]
+    fn dx_val_003_limit_rejects_stop_price() {
+        let err = validate_order_prices(
+            &OrderType::Limit,
+            Some(Decimal::new(100, 0)),
+            Some(Decimal::new(99, 0)),
+        )
+        .expect_err("limit with stop_price");
+        assert!(matches!(err, ValidationError::Price(_)));
+    }
+
+    /// DX-VAL-003
+    #[test]
+    fn dx_val_003_stop_market_requires_stop_price() {
+        let err = validate_order_prices(&OrderType::StopMarket, None, None)
+            .expect_err("stop market without stop_price");
+        assert!(matches!(err, ValidationError::Price(_)));
+    }
+
+    /// DX-VAL-003
+    #[test]
+    fn dx_val_003_stop_limit_requires_price() {
+        let err = validate_order_prices(&OrderType::StopLimit, None, Some(Decimal::new(99, 0)))
+            .expect_err("stop limit without price");
+        assert!(matches!(err, ValidationError::Price(_)));
+    }
+
+    /// DX-VAL-003
+    #[test]
+    fn dx_val_003_market_accepts_no_prices() {
+        validate_order_prices(&OrderType::Market, None, None).expect("market without prices");
+    }
+
     /// DX-VAL-004
     #[test]
     fn dx_val_004_rejects_created_after_updated() {
