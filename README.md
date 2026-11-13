@@ -4,7 +4,7 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 版本 | `0.1.6` |
+| 版本 | `0.1.7` |
 | Rust | Edition 2024，MSRV 1.88 |
 | 许可 | MIT |
 | 发布 | 仅从 Git 源码消费，不发布到 crates.io |
@@ -17,7 +17,7 @@
 
 ```toml
 [dependencies]
-domainx = { version = "0.1.6", git = "https://github.com/bytechainx/domainx.git", rev = "<DOMAINX_SHA>" }
+domainx = { version = "0.1.7", git = "https://github.com/bytechainx/domainx.git", rev = "<DOMAINX_SHA>" }
 ```
 
 ## 职责与边界
