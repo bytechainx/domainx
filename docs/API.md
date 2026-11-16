@@ -5,7 +5,8 @@
 ## 身份与基础类型
 
 - `InstrumentKey`：以 `exchange` 与 `symbol` 构成场所内标的身份。
-- `OrderId`、`TradeId`、`ReportId`、`PositionId`、`PortfolioId`：跨层共享标识。
+- `Decimal`、`DecimalError`：经 `decimalx` 重导出的唯一数值底座。
+- `OrderId`、`TradeId`、`ReportId`、`PositionId`、`PortfolioId`、`Timestamp`：跨层共享标识与时间戳。
 - `OrderSide`、`OrderType`、`OrderStatus`、`TimeInForce`：订单字段和值域。
 - `PositionDirection`、`PositionStatus`、`ExecType`：持仓与执行状态。
 
@@ -23,3 +24,4 @@
 - `validate_non_negative_quantities`、`validate_quantity_balance`：校验数量非负与守恒。
 - `validate_created_before_updated`、`validate_gtd_deadline`：校验时间顺序。
 - `aggregate_commissions_by_asset`：以 checked arithmetic 按资产汇总手续费。
+- `ValidationError`：校验失败原因枚举。
