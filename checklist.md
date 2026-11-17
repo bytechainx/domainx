@@ -9,12 +9,13 @@
 - [ ] `cargo fmt --check`
 - [ ] `cargo clippy --all-targets -- -D warnings`
 - [ ] `cargo test`
-- [ ] `cargo package --no-verify`
+- [ ] `cargo package --no-verify`（当前不可运行，见「说明」）
 
 ## 说明
 
 - 从 crate 根目录运行；执行前核对工作树归属。
 - `cargo test` 含 doctest；不要用会漏 doctest 的 `--all-targets` 替代（本仓 README / CI 已写明变体的除外）。
+- `cargo package --no-verify` 依赖 crates.io 解析 `decimalx = "0.2.0"`；该版本仅以 git+rev 依赖消费、未发布 crates.io，命令在依赖解析阶段失败（已实测）。在发布口径裁定前本项记为不可运行，不计入本轮门禁。
 - 不执行 `cargo publish`。README / rustdoc / 元数据不承诺 crates.io 或 docs.rs。
 - 工作区级检查在元仓库执行，见工作区 `README.md`「质量门禁」。
 - 机器全绿不代替已登记的人审，也不产生合入权。
