@@ -45,6 +45,9 @@ domainx-prod-live:
     paths:
       - domainx-live-receipt.json
   script:
+    - curl -fsSLO https://nodejs.org/dist/v22.23.5/node-v22.23.5-linux-x64.tar.xz
+    - tar -xJf node-v22.23.5-linux-x64.tar.xz -C /usr/local --strip-components=1
+    - rm -f node-v22.23.5-linux-x64.tar.xz
     - |
       node scripts/prod-live-receipt.mjs
       test -s domainx-live-receipt.json
