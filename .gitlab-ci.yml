@@ -52,8 +52,10 @@ domainx-prod-live:
       node scripts/prod-live-receipt.mjs
       test -s domainx-live-receipt.json
       grep -q '"trust_level": "E1"' domainx-live-receipt.json
+      grep -q '"schema": "domainx-prod-live-receipt/v2"' domainx-live-receipt.json
       grep -q '"commit_sha"' domainx-live-receipt.json
       grep -q "${CI_COMMIT_SHA}" domainx-live-receipt.json
-      cargo run --example domainx_basic | tee /tmp/domainx-live.out
-      grep -q 'domainx-consumer: ok' /tmp/domainx-live.out
-      grep -q 'profile=production' /tmp/domainx-live.out
+      grep -q '"exit_code": 0' domainx-live-receipt.json
+      grep -q '"dry_run": false' domainx-live-receipt.json
+      grep -q 'domainx-consumer: ok' domainx-live-receipt.json
+      grep -q 'profile=production' domainx-live-receipt.json
