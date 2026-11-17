@@ -33,3 +33,27 @@ msrv:
   script:
     - if [ "$MSRV" != "1.88" ]; then rustup toolchain install "$MSRV" --profile minimal; fi
     - cargo +"$MSRV" check --all-features
+
+domainx-prod-live:
+  extends: .rust
+  stage: test
+  variables:
+    DOMAINX_LIVE_PROFILE: "production"
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - domainx-live-receipt.json
+  script:
+    - curl -fsSLO https://nodejs.org/dist/v22.23.5/node-v22.23.5-linux-x64.tar.xz
+    - tar -xJf node-v22.23.5-linux-x64.tar.xz -C /usr/local --strip-components=1
+    - rm -f node-v22.23.5-linux-x64.tar.xz
+    - |
+      node scripts/prod-live-receipt.mjs
+      test -s domainx-live-receipt.json
+      grep -q '"trust_level": "E1"' domainx-live-receipt.json
+      grep -q '"commit_sha"' domainx-live-receipt.json
+      grep -q "${CI_COMMIT_SHA}" domainx-live-receipt.json
+      cargo run --example domainx_basic | tee /tmp/domainx-live.out
+      grep -q 'domainx-consumer: ok' /tmp/domainx-live.out
+      grep -q 'profile=production' /tmp/domainx-live.out
