@@ -1,15 +1,19 @@
 #!/usr/bin/env node
-// 生成 domainx-prod-live E1 机器收据（trust_level=E1）。
-// 语义对齐 kernel-prod-live-receipt.mjs：收据绑定 CI_COMMIT_SHA，
-// 记录 pipeline / job / 消费者 / profile，由 CI job 断言字段后归档为 artifact。
-// 环境变量缺失或非常规运行属工具错误，退出码 2；内容不一致属内容发现，退出码 1。
+// 生成 domainx-prod-live E1 机器收据（trust_level=E1，schema v2）。
+// v2 相对 v1：脚本内实际执行消费者 example，把 consumer_run（命令、退出码、
+// 耗时、stdout 尾部、stdout SHA-256）与 verification.dry_run=false 写入收据，
+// 收据自身绑定运行结果，不再依赖 CI job 事后 grep。
+// 环境变量缺失或非常规运行属工具错误，退出码 2；HEAD/CI SHA 不一致或消费者
+// 运行失败属内容发现，退出码 1（收据仍会先落盘，供 artifacts 归档取证）。
 import { writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const RECEIPT_PATH = process.env.RECEIPT_OUT || "domainx-live-receipt.json";
 const CONSUMER_MANIFEST = "Cargo.toml";
 const CONSUMER_EXAMPLE = "domainx_basic";
 const CONSUMER_MARKER = "domainx-consumer: ok";
+const CONSUMER_PROFILE_MARKER = "profile=production";
 
 function toolError(message) {
   console.error(`prod-live-receipt 工具错误：${message}`);
@@ -36,8 +40,31 @@ const profile = process.env.DOMAINX_LIVE_PROFILE;
 if (!profile) toolError("DOMAINX_LIVE_PROFILE 未设置");
 
 const headTree = git(["rev-parse", "HEAD^{tree}"]);
+const consumerCommand = `DOMAINX_LIVE_PROFILE=${profile} cargo run --example ${CONSUMER_EXAMPLE}`;
+
+const started = Date.now();
+const run = spawnSync("cargo", ["run", "--example", CONSUMER_EXAMPLE], {
+  encoding: "utf8",
+  env: { ...process.env, DOMAINX_LIVE_PROFILE: profile },
+  maxBuffer: 16 * 1024 * 1024,
+});
+const elapsedMs = Date.now() - started;
+if (run.error) toolError(`cargo run --example ${CONSUMER_EXAMPLE}: ${run.error.message}`);
+
+const stdout = `${run.stdout || ""}`;
+const stdoutTail = stdout.trimEnd().split("\n").slice(-5).join("\n");
+const consumerRun = {
+  command: consumerCommand,
+  exit_code: run.status,
+  elapsed_ms: elapsedMs,
+  stdout_tail: stdoutTail,
+  stdout_sha256: createHash("sha256").update(stdout).digest("hex"),
+};
+
+const markerOk = run.status === 0 && stdout.includes(CONSUMER_MARKER) && stdout.includes(CONSUMER_PROFILE_MARKER);
+
 const receipt = {
-  schema: "domainx-prod-live-receipt/v1",
+  schema: "domainx-prod-live-receipt/v2",
   trust_level: "E1",
   evidence_id: `E1-domainx-live-${process.env.CI_JOB_NAME || "local"}-${process.env.CI_PIPELINE_ID || "local"}`,
   commit_sha: commitSha,
@@ -52,8 +79,27 @@ const receipt = {
     expected_marker: CONSUMER_MARKER,
     profile,
   },
+  consumer_run: consumerRun,
+  verification: {
+    result: markerOk ? "PASS" : "FAIL",
+    dry_run: false,
+    binding: {
+      commit_sha: commitSha,
+      tree_sha: headTree,
+      environment: "internal-production",
+      timestamp: new Date().toISOString(),
+      outcome: markerOk ? "PASS" : "FAIL",
+    },
+  },
   generated_at: new Date().toISOString(),
 };
 
 writeFileSync(RECEIPT_PATH, `${JSON.stringify(receipt, null, 2)}\n`);
-console.log(`prod-live-receipt: wrote ${RECEIPT_PATH} (commit ${commitSha.slice(0, 9)})`);
+console.log(`prod-live-receipt: wrote ${RECEIPT_PATH} (commit ${commitSha.slice(0, 9)}, consumer exit=${run.status})`);
+
+if (!markerOk) {
+  console.error(
+    `prod-live-receipt 内容发现：消费者运行未满足断言（exit=${run.status}, marker=${stdout.includes(CONSUMER_MARKER)}, profile=${stdout.includes(CONSUMER_PROFILE_MARKER)}）`,
+  );
+  process.exit(1);
+}
